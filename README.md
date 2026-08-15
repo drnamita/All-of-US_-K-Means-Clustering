@@ -42,7 +42,6 @@ Researchers interested in accessing All of Us data should apply through the offi
 ## Study Cohort
 
 The cohort was constructed by identifying participants with breast cancer and subsequently restricting the population to female participants.
-
 ### Cohort flow
 
 ```text
@@ -61,3 +60,14 @@ N = 11,972
 15 clustering features
 Mental health + metabolic +
 treatment + sociodemographic characteristics
+        │
+        ▼
+K-means clustering (k = 4)
+        │
+        ├───────────────┬────────────────┬────────────────┐
+        ▼               ▼                ▼                ▼
+   Cluster 1        Cluster 2         Cluster 3        Cluster 4
+   Treatment-       Severe            High metabolic   Low treatment-
+   exposed         psychiatric       burden with      exposure /
+   phenotype       phenotype         mental health   lower metabolic
+                                      burden          burden
