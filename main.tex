@@ -1,0 +1,935 @@
+\documentclass[11pt]{article}
+
+% =========================
+% Packages
+% =========================
+\usepackage[margin=1in]{geometry}
+
+% Tables and figures
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{adjustbox}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{tabularx}
+\usepackage{siunitx}
+\usepackage{caption}
+
+% Mathematics and formatting
+\usepackage{amsmath}
+\usepackage{setspace}
+\usepackage[authoryear,round]{natbib}
+\usepackage[hidelinks]{hyperref}
+
+
+% =========================
+% Document Formatting
+% =========================
+\onehalfspacing
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=black,
+    citecolor=black,
+    urlcolor=blue
+}
+
+% =========================
+% Title
+% =========================
+\title{
+\textbf{Identification of Distinct Mental Health--Metabolic Clusters in Female Breast Cancer Patients Using All of Us Real-World Data}
+}
+
+% =========================
+% Authors
+% =========================
+% =========================
+\author{
+\textbf{Namita Mishra, MPH, MD}\\
+University of West Florida, Department of Health Science and Administration\\
+Pensacola, FL, 32514, USA
+\and
+\textbf{Karishma Chhabria, MPH, PhD}\\
+University of West Florida, Department of Public Health\\
+Pensacola, FL, 32514, USA
+\and
+\textbf{Achraf Cohen, PhD}\\
+University of West Florida, Department of Mathematics and Statistics\\
+Pensacola, FL, 32514, USA
+}
+
+\date{May 2026}
+
+% =========================
+% Document
+% =========================
+\begin{document}
+
+\maketitle
+
+% =========================================================
+% Abstract
+% =========================================================
+\begin{abstract}
+
+\textbf{Background:} Female breast cancer patients may experience co-occurring
+mental health disorders, metabolic comorbidities, and cancer treatment-related
+burdens that are difficult to characterize using conventional analyses focused
+on individual conditions. This study used an unsupervised machine-learning
+approach to identify multidimensional phenotypic subgroups among female breast
+cancer patients using real-world data.
+
+\textbf{Methods:} This cross-sectional observational study used data from the
+All of Us Research Program Curated Data Repository version 8 (CTv8). The
+initial breast cancer cohort included 12,542 participants, of whom 11,972 were
+female and comprised the analytic cohort for clustering. Fifteen clustering
+features were used to represent mental health disorders, metabolic conditions,
+cancer treatment exposure, and selected sociodemographic characteristics.
+Mental health indicators included depression, anxiety, bipolar disorder, and
+psychosis; metabolic indicators included obesity, diabetes, hypertension, and
+dyslipidemia; treatment characteristics included chemotherapy, radiation,
+surgery, and a composite Treatment Score; and sociodemographic characteristics
+included education, marital status, and age group. Race was excluded from the
+clustering feature matrix because 1,555 participants had missing race
+information. Variables were standardized before K-means clustering. The number
+of clusters was evaluated using the elbow method, average silhouette width,
+and gap statistic, with clinical interpretability also considered. K-means
+clustering was performed using 25 random starts and a fixed random seed of 123.
+
+\textbf{Results:} Four distinct phenotypic clusters were identified among the
+11,972 female breast cancer patients. Cluster 1 ($n=2,714$; 22.7\%) was
+characterized primarily by intensive multimodal cancer treatment, with high
+prevalence of chemotherapy, radiation, and surgery. Cluster 2 ($n=201$; 1.7\%)
+represented a clinically distinctive psychiatric-burden phenotype, with high
+prevalence of depression, anxiety, bipolar disorder, and psychosis. Cluster 3
+($n=4,227$; 35.3\%) demonstrated the greatest metabolic burden, including high
+prevalence of obesity, diabetes, hypertension, and dyslipidemia, accompanied by
+substantial mental health burden. Cluster 4 ($n=4,830$; 40.4\%) demonstrated
+comparatively lower mental health and metabolic burden and limited treatment
+exposure. Differences across clusters were statistically significant for the
+evaluated mental health, metabolic, treatment, and sociodemographic
+characteristics ($p<0.001$).
+
+\textbf{Conclusions:} Unsupervised K-means clustering identified four distinct
+multidimensional phenotypic profiles among female breast cancer patients.
+The profiles highlight substantial heterogeneity in the intersection of
+psychiatric morbidity, metabolic comorbidity, and cancer treatment exposure.
+These data-driven phenotypes may provide a useful framework for exploratory
+patient segmentation and survivorship research. Future studies should assess
+cluster stability using alternative methods designed for binary data and
+evaluate whether the identified phenotypes are associated with longitudinal
+clinical outcomes, healthcare utilization, recurrence, or mortality.
+
+\end{abstract}
+
+\noindent\textbf{Keywords:} breast cancer; mental health; metabolic
+comorbidities; clinical phenotyping; K-means clustering; unsupervised machine
+learning; real-world data; All of Us Research Program
+% =========================================================
+% Introduction
+% =========================================================
+\section{Introduction}
+
+
+Breast cancer survivors often experience heterogeneous patterns of mental health disorders, metabolic comorbidities, and treatment-related burdens. These conditions may occur concurrently and may contribute to differences in survivorship experiences and healthcare needs. Traditional analyses often evaluate mental health disorders, metabolic conditions, and treatment characteristics independently. However, these characteristics may co-occur in clinically meaningful patterns that are not readily captured when individual conditions are examined separately.
+
+The increasing availability of large-scale electronic health record (EHR) and real-world health data has created opportunities to move beyond traditional single-disease classifications toward data-driven clinical phenotyping. Machine learning approaches have been increasingly applied to EHR data to identify patient subphenotypes, co-occurring conditions, and clinically meaningful patterns that may not be readily apparent using conventional analytic approaches \cite{yang2023}. In particular, unsupervised learning methods have been used for phenotype discovery and patient subgroup identification, with k-means representing one of the commonly applied approaches in healthcare research \cite{yang2023}. In a review of 79 studies, K-means clustering was the most prevalent unsupervised machine learning method used in data-driven population segmentation analysis to separate a heterogeneous population into relatively homogeneous groups with similar healthcare features \cite{Liu2023}.
+
+Phenotype clustering provides a data-driven approach for identifying groups of patients or diseases that share similar clinical characteristics. Wang et al.~(2022) describe phenotype clustering as a machine-learning approach that groups patients with similar clinical, biomarker, or genomic characteristics. Their review highlights important data-processing and optimization steps, including handling missing data and outliers, scaling, and feature selection, and summarizes major clustering approaches such as centroid-based, hierarchical, distribution-based, density-based, and spectral methods. Phenotype clustering may help reveal previously obscured disease patterns, differences in treatment response, and clinically meaningful patient subgroups, thereby supporting precision medicine and clinical trial recruitment \cite{Wang2022Phenotype}.
+
+Similarly, Shivade et al.~\cite{Shivade2014} reviewed 97 studies examining approaches for identifying patient phenotypes from electronic health records. The reviewed studies used structured EHR data, clinical notes, rule-based methods, natural language processing, machine learning, and hybrid approaches. Commonly studied conditions included cancer, diabetes, heart failure, rheumatoid arthritis, and cataract. These findings demonstrate the broad application of computational phenotyping approaches across clinical conditions and data sources.
+
+Methodologically, clustering predominantly dichotomous clinical data presents specific challenges. Previous research has demonstrated that k-means can recover meaningful cluster structures in binary data, although alternative approaches such as k-median and latent class methods may perform differently depending on the underlying cluster structure \cite{Brusco2004,Brusco2017}. More recent work has also emphasized methods specifically designed for categorical or sparse binary data, including k-modes and model-based approaches \cite{Dorman2022,Smieja2019}. These methodological considerations highlight the importance of careful feature selection, preprocessing, and interpretation when clustering predominantly binary clinical data.
+
+Despite the increasing use of data-driven phenotyping in healthcare, relatively little work has examined multidimensional phenotypic heterogeneity among women with breast cancer by simultaneously considering mental health disorders, metabolic comorbidities, cancer treatment exposure, and selected sociodemographic characteristics. Existing analyses frequently focus on individual conditions or pairwise associations, potentially overlooking clinically relevant combinations of co-occurring characteristics. An unsupervised clustering framework may therefore provide a useful exploratory approach for identifying patient subgroups based on observed combinations of clinical and sociodemographic characteristics without imposing prespecified outcome categories.
+
+Therefore, this study aimed to identify distinct phenotypic subgroups of female breast cancer patients in the All of Us Research Program based on co-occurring mental health disorders, metabolic conditions, treatment burden, and selected sociodemographic characteristics using an unsupervised clustering approach. Specifically, we sought to characterize heterogeneous patterns of mental health and metabolic comorbidity and treatment exposure within the female breast cancer population.
+
+% =========================================================
+% Methods
+% =========================================================
+\section{Methods}
+\subsection{Study design and Data Source}
+Cross-sectional observational study using an unsupervised machine learning analytic approach to analyze All of Us Research Program Female breast cancer patients \cite{AllOfUs2019}.
+
+The data analyzed is from the All of Us Research Program, Version CTv8, a large national real-world biomedical dataset containing electronic health records and participant-reported information.
+Within the All of Us Research Program, participant-provided information (PPI) is collected through surveys administered via the secure All of Us Participant Portal to complement electronic health record (EHR) data. Baseline surveys capture sociodemographic, health, and lifestyle information, with additional domain-specific surveys deployed over time. Survey responses are structured using survey codebooks and transferred from the Raw Data Repository to the Curated Data Repository, where responses are mapped to source codes and OMOP concept codes for research use.
+
+
+
+The data was extrcated betwen February 6–26, 2026 using cloud-based R platform. The initial breast cancer cohort included 12,542 participants. The analytic population was restricted to female breast cancer patients, resulting in a cohort of 11,972 participants. 
+The analytic dataset contained multidimensional metabolic, mental health, treatment, and sociodemographic information on Breast Cancer female participants,  suitable for unsupervised phenotyping.  The cohort selection process is summarized in Figure~\ref{fig:cohort_flow}.
+The initial breast cancer cohort included 12,542 participants, and restriction
+to female participants resulted in 11,972 participants for the clustering
+analysis.
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.75\textwidth]{Figs/April flow chart.png}
+    \caption{Cohort selection of female breast cancer participants from the
+    All of Us Research Program. The initial breast cancer cohort included
+    12,542 participants, of whom 11,972 were female and included in the
+    clustering analysis.}
+    \label{fig:cohort_flow}
+\end{figure}
+
+\subsection{Variable Construction}
+
+The raw dataset included 11,972 female participants and 16 candidate variables. The clustering variables were selected to capture four domains of patient characteristics: mental health, metabolic health, cancer treatment, and sociodemographic factors. Mental health variables included depression, anxiety, bipolar disorder, and psychosis; metabolic variables included obesity, diabetes, hypertension, and dyslipidemia; and treatment variables included chemotherapy, radiation, surgery, and a composite treatment burden score (0–3). Treatment Score was calculated as the sum of chemotherapy, radiation therapy, and surgery indicators, ranging from 0 to 3. Sociodemographic variables included education, marital status, and age group. 
+
+These variables were selected to characterize multidimensional patterns of comorbidity and treatment among female breast cancer patients. 
+Because race was a structural sociodemographic covariate rather than a primary clustering feature, and because 1,555 observations had missing race information, \texttt{race\_bin} was excluded from the clustering feature matrix. Race was therefore not imputed and was not used to define the identified phenotypic clusters. After exclusion of race, the final clustering feature matrix contained 15 variables.
+ 
+\begin{table}[H]
+\centering
+\caption{Clustering Features and Variable Definitions}
+\label{tab:clustering_features}
+\begin{tabular}{p{3.2cm}p{5.0cm}p{6.0cm}}
+\hline
+\textbf{Domain} & \textbf{Variable} & \textbf{Definition/Coding} \\
+\hline
+
+\textbf{Mental Health} & Depression\_bin & 0 = No, 1 = Yes \\
+& Anxiety\_bin & 0 = No, 1 = Yes \\
+& Bipolar\_bin & 0 = No, 1 = Yes \\
+& Psychosis\_bin & 0 = No, 1 = Yes \\
+
+\hline
+
+\textbf{Metabolic Conditions} & Obesity\_bin & 0 = No, 1 = Yes \\
+& Diabetes\_bin & 0 = No, 1 = Yes \\
+& Hypertension\_bin & 0 = No, 1 = Yes \\
+& Dyslipidemia\_bin & 0 = No, 1 = Yes \\
+
+\hline
+
+\textbf{Treatment} & Chemo\_bin & 0 = No, 1 = Yes \\
+& Radiation\_bin & 0 = No, 1 = Yes \\
+& Surgery\_bin & 0 = No, 1 = Yes \\
+& Treatment\_Score & 0--3; total number of treatment modalities received \\
+& & 0 = No treatment recorded; 1 = Single modality; \\
+& & 2 = Dual therapy; 3 = Multimodal treatment \\
+
+\hline
+
+\textbf{Sociodemographic} & race\_bin & 0 = Other, 1 = White \\
+& education\_bin & 0 = Below college, 1 = College \\
+& marital\_bin & 0 = Not married, 1 = Married/partnered \\
+
+\hline
+
+\textbf{Age-derived} & age\_bin & 0 = Younger ($<$ cohort mean age); \\
+& & 1 = Older ($\geq$ cohort mean age) \\
+
+\hline
+
+
+\multicolumn{2}{l}{\textbf{Total candidate features}} & \textbf{16} \\
+
+\multicolumn{2}{l}{\textbf{Final clustering features}} &
+\textbf{15: 14 binary variables + 1 ordinal variable} \\
+
+\hline
+\end{tabular}
+
+\vspace{0.2cm}
+\begin{minipage}{0.95\textwidth}
+\small
+\textit{Note:} Binary variables were coded as 0/1. The Treatment\_Score was an ordinal measure ranging from 0 to 3 and represented the total number of treatment modalities received. Age was dichotomized using the cohort mean as the threshold, with participants younger than the mean coded as 0 and those at or above the mean coded as 1.
+\end{minipage}
+\end{table}
+
+Variables were transformed into standardized binary or ordinal measures across mental health, metabolic, treatment, and sociodemographic domains. Binary indicators were coded as 0/1, while the Treatment Score was based on the number of treatment modalities received.(as the sum of chemotherapy, radiation therapy, and surgery indicators, ranging from 0 to 3). Sociodemographic characteristics were categorized into binary groups, including age based on the female breast cancer cohort mean. All transformations were performed in R to ensure consistent coding and generate the feature matrix used for clustering.
+
+\subsection{Missing Data and Race Exclusion}
+
+The initial analytic dataset contained 16 variables. Assessment of missingness demonstrated that 1,555 observations had missing values for \texttt{race\_bin}, while all other analytic variables had no missing values.
+
+\begin{table}[H]
+\centering
+\caption{Missingness Across Candidate Analytic Variables}
+\label{tab:missingness}
+
+\begin{adjustbox}{max width=0.75\textwidth}
+\begin{tabular}{lrr}
+\toprule
+\textbf{Variable} & \textbf{Missing, N} & \textbf{Missing, \%} \\
+\midrule
+Depression\_bin & 0 & 0.0 \\
+Anxiety\_bin & 0 & 0.0 \\
+Bipolar\_bin & 0 & 0.0 \\
+Psychosis\_bin & 0 & 0.0 \\
+Obesity\_bin & 0 & 0.0 \\
+Diabetes\_bin & 0 & 0.0 \\
+Hypertension\_bin & 0 & 0.0 \\
+Dyslipidemia\_bin & 0 & 0.0 \\
+Chemo\_bin & 0 & 0.0 \\
+Radiation\_bin & 0 & 0.0 \\
+Surgery\_bin & 0 & 0.0 \\
+Treatment\_Score & 0 & 0.0 \\
+race\_bin & 1,555 & 13.0 \\
+Education\_bin & 0 & 0.0 \\
+Marital\_bin & 0 & 0.0 \\
+Age\_bin & 0 & 0.0 \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\vspace{2mm}
+
+\begin{flushleft}
+\footnotesize
+\textit{Note:} Missingness was confined to the race variable. Percentages are based on the total analytic cohort ($N=11,972$).
+\end{flushleft}
+
+\end{table}
+
+\subsection{Pre-clustering Assessment of Candidate Features}
+
+Before conducting K-means clustering, a pairwise correlation analysis was performed to evaluate the relationships among the candidate clinical, treatment, and sociodemographic features. This step was undertaken as an initial data assessment to determine whether substantial redundancy existed among the variables and to identify groups of features that were strongly related. Because clustering is sensitive to the structure of the input feature space, examining correlations before clustering provides an opportunity to assess whether individual variables contribute distinct information or whether highly correlated features may disproportionately represent the same underlying characteristic.
+
+Pearson correlation coefficients were calculated for all candidate clustering variables and presented as a correlation matrix (Table~\ref{tab:correlation_matrix}). The analysis was considered a descriptive and exploratory assessment rather than a formal variable-selection procedure. In particular, correlations were examined across the mental health, metabolic, treatment, and sociodemographic domains to determine whether the proposed feature set captured complementary aspects of the breast cancer phenotype. The composite Treatment Score was retained despite its expected correlation with chemotherapy, radiation, and surgery because it was intentionally constructed to represent cumulative treatment burden. Similarly, moderate correlations among related clinical conditions were considered clinically meaningful rather than automatically treated as evidence for exclusion.
+
+
+
+\subsubsection{Correlation Matrix Interpretation}
+
+Pairwise correlations among the candidate clustering variables were generally low to moderate, suggesting that most variables captured distinct dimensions of the clinical, treatment, and sociodemographic phenotype. The strongest associations were observed between the treatment indicators and the composite Treatment Score, with correlations of 0.646 for chemotherapy, 0.788 for radiation, and 0.755 for surgery. These stronger correlations were expected because the Treatment Score was derived from the individual treatment modalities.
+
+Moderate correlations were also observed among mental health variables, particularly between depression and anxiety ($r=0.490$), and among metabolic conditions, including obesity with diabetes ($r=0.337$), diabetes with hypertension ($r=0.331$), and hypertension with dyslipidemia ($r=0.374$). The remaining pairwise associations were generally small, indicating limited redundancy across most candidate features. Overall, the correlation structure supported the use of a multidimensional clustering framework while highlighting the expected overlap between the Treatment Score and its component treatment variables.
+
+
+The correlation analysis therefore provided an initial assessment of the feature structure before clustering and supported proceeding with an unsupervised approach. Importantly, the purpose of this analysis was not to eliminate correlated variables solely on the basis of their pairwise associations, but to understand the structure of the candidate feature space and ensure that the final clustering variables represented the intended clinical domains. Given the predominantly low-to-moderate correlations and the clinical rationale for retaining the treatment components and Treatment Score, the final feature set was carried forward to K-means clustering.
+
+
+
+
+
+\begin{table}[H]
+\centering
+\caption{Correlation Matrix of Clinical, Treatment, and Sociodemographic Features Used for Clustering}
+\label{tab:correlation_matrix}
+\scriptsize
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lrrrrrrrrrrrrrrr}
+\toprule
+&
+Dep &
+Anx &
+Bip &
+Psy &
+Obe &
+Dia &
+Hyp &
+Dys &
+Che &
+Rad &
+Sur &
+TS &
+Edu &
+Mar &
+Age \\
+\midrule
+
+Dep &
+1.000 & 0.490 & 0.266 & 0.123 & 0.218 & 0.145 &
+0.166 & 0.156 & 0.049 & 0.048 & 0.027 & 0.055 &
+-0.077 & -0.123 & 0.044 \\
+
+Anx &
+0.490 & 1.000 & 0.244 & 0.105 & 0.165 & 0.091 &
+0.124 & 0.127 & 0.083 & 0.065 & 0.051 & 0.088 &
+-0.046 & -0.066 & 0.080 \\
+
+Bip &
+0.266 & 0.244 & 1.000 & 0.240 & 0.144 & 0.091 &
+0.082 & 0.068 & 0.013 & 0.014 & 0.040 & 0.032 &
+-0.063 & -0.087 & 0.056 \\
+
+Psy &
+0.123 & 0.105 & 0.240 & 1.000 & 0.065 & 0.058 &
+0.054 & 0.035 & -0.003 & 0.003 & 0.012 & 0.007 &
+-0.059 & -0.067 & 0.023 \\
+
+Obe &
+0.218 & 0.165 & 0.144 & 0.065 & 1.000 & 0.337 &
+0.284 & 0.212 & 0.032 & 0.051 & 0.068 & 0.070 &
+-0.113 & -0.125 & 0.013 \\
+
+Dia &
+0.145 & 0.091 & 0.091 & 0.058 & 0.337 & 1.000 &
+0.331 & 0.318 & 0.008 & -0.005 & -0.011 & -0.004 &
+-0.158 & -0.122 & -0.113 \\
+
+Hyp &
+0.166 & 0.124 & 0.082 & 0.054 & 0.284 & 0.331 &
+1.000 & 0.374 & 0.015 & 0.024 & 0.005 & 0.019 &
+-0.144 & -0.149 & -0.266 \\
+
+Dys &
+0.156 & 0.127 & 0.068 & 0.035 & 0.212 & 0.318 &
+0.374 & 1.000 & -0.033 & -0.005 & -0.016 & -0.023 &
+-0.051 & -0.063 & -0.316 \\
+
+Che &
+0.049 & 0.083 & 0.013 & -0.003 & 0.032 & 0.008 &
+0.015 & -0.033 & 1.000 & 0.346 & 0.190 & 0.646 &
+-0.007 & 0.002 & 0.066 \\
+
+Rad &
+0.048 & 0.065 & 0.014 & 0.003 & 0.051 & -0.005 &
+0.024 & -0.005 & 0.346 & 1.000 & 0.374 & 0.788 &
+-0.004 & 0.003 & 0.032 \\
+
+Sur &
+0.027 & 0.051 & 0.040 & 0.012 & 0.068 & -0.011 &
+0.005 & -0.016 & 0.190 & 0.374 & 1.000 & 0.755 &
+0.010 & 0.031 & 0.057 \\
+
+TS &
+0.055 & 0.088 & 0.032 & 0.007 & 0.070 & -0.004 &
+0.019 & -0.023 & 0.646 & 0.788 & 0.755 & 1.000 &
+0.000 & 0.018 & 0.069 \\
+
+Edu &
+-0.077 & -0.046 & -0.063 & -0.059 & -0.113 & -0.158 &
+-0.144 & -0.051 & -0.007 & -0.004 & 0.010 & 0.000 &
+1.000 & 0.131 & -0.030 \\
+
+Mar &
+-0.123 & -0.066 & -0.087 & -0.067 & -0.125 & -0.122 &
+-0.149 & -0.063 & 0.002 & 0.003 & 0.031 & 0.018 &
+0.131 & 1.000 & 0.085 \\
+
+Age &
+0.044 & 0.080 & 0.056 & 0.023 & 0.013 & -0.113 &
+-0.266 & -0.316 & 0.066 & 0.032 & 0.057 & 0.069 &
+-0.030 & 0.085 & 1.000 \\
+
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\vspace{2mm}
+
+\begin{flushleft}
+\footnotesize
+\textit{Note:} Dep = Depression; Anx = Anxiety; Bip = Bipolar disorder;
+Psy = Psychosis; Obe = Obesity; Dia = Diabetes; Hyp = Hypertension;
+Dys = Dyslipidemia; Che = Chemotherapy; Rad = Radiation; Sur = Surgery;
+TS = Treatment Score; Edu = Education; Mar = Marital status;
+Age = Age group. Values are Pearson correlation coefficients.
+\texttt{race\_bin} was excluded from the correlation matrix because of
+missingness and was not included in the final clustering feature set.
+\end{flushleft}
+
+\end{table}
+
+
+
+\subsubsection{Final Clustering Features}
+
+The final feature set was designed to capture four complementary dimensions of the breast cancer patient experience and included:
+
+\begin{itemize}
+\item 4 mental health binary indicators;
+\item 4 metabolic binary indicators;
+\item 3 treatment binary indicators;
+\item 1 ordinal Treatment Score (0--3);
+\item 3 sociodemographic/age binary indicators.
+\end{itemize}
+
+Thus, the clustering framework incorporated predominantly binary variables, with the Treatment Score representing an ordinal measure of cumulative treatment burden.
+
+
+
+\subsection{K-means Clustering}
+
+Following the pre-clustering assessment, K-means clustering was applied to the final feature matrix. Missing values in the binary variables were treated as absence of the condition and replaced with 0. The resulting variables were standardized using z-score normalization so that each feature contributed comparably to the clustering procedure.
+
+The optimal number of clusters was evaluated using multiple complementary cluster-validation criteria, including the within-cluster sum of squares (WSS; elbow method), average silhouette width, and gap statistic. The elbow method evaluated the reduction in WSS across candidate values of $k$, while the silhouette analysis assessed cluster cohesion and separation. The gap statistic compared the observed clustering performance with that expected under a reference distribution. These criteria were examined jointly to determine the most appropriate number of clusters, with consideration also given to the interpretability and clinical relevance of the resulting phenotypic groups.
+
+Based on this assessment, a four-cluster K-means solution was selected. K-means clustering was performed using 25 random initializations ($nstart = 25$) with a fixed random seed of 123 to ensure reproducibility. Each participant was subsequently assigned to one of the four identified clusters. Table~\ref{tab:kmeans_methodology}
+
+
+\begin{table}[H]
+\centering
+\caption{Summary of the K-Means Clustering Methodology}
+\label{tab:kmeans_methodology}
+\begin{tabular}{ll}
+\toprule
+\textbf{Methodological Component} & \textbf{Specification} \\
+\midrule
+Analysis & Unsupervised clustering \\
+Algorithm & K-means clustering \\
+Number of clusters ($k$) & 4 \\
+Standardization & Yes; variables standardized prior to clustering \\
+Random starts & 25 (\texttt{nstart = 25}) \\
+Random seed & 123 (\texttt{set.seed(123)}) \\
+Distance/optimization & Euclidean-distance-based k-means objective \\
+Cluster assignment & Assignment based on proximity to cluster centroids \\
+\bottomrule
+\end{tabular}
+
+\vspace{2mm}
+\begin{minipage}{0.90\textwidth}
+\footnotesize
+\textit{Note:} K-means clustering was performed on standardized clustering variables. 
+The four-cluster solution was estimated using 25 random initializations to improve 
+the stability of the clustering solution. A fixed random seed was used to ensure 
+reproducibility.
+\end{minipage}
+\end{table}
+
+
+Finally, cluster-specific descriptive statistics were generated to characterize the resulting phenotypic groups. The resulting clusters were then interpreted according to their patterns of mental health burden, metabolic comorbidity, treatment exposure, and sociodemographic characteristics.
+
+
+\subsection{Statistical Analysis}
+
+Descriptive statistics were calculated for the full analytic cohort before clustering. Frequencies and percentages were used to summarize binary characteristics and treatment burden. Continuous variables were summarized using means and standard deviations, whereas categorical variables were summarized using frequencies and percentages. 
+
+Unsupervised clustering methods used included k-means clustering. K-means clustering was used to identify four distinct phenotypic subgroups based on the final clustering feature matrix. The four-cluster solution was selected to provide clinically interpretable subgroups representing distinct patterns of mental health, metabolic, and treatment characteristics.
+
+Following clustering, the distribution of clinical and sociodemographic characteristics was compared across clusters. Pearson's chi-squared test or Fisher's exact test, as appropriate, was used to describe differences in categorical distributions across the four clusters. Because the clustering variables themselves contributed to the formation of the clusters, these comparisons were interpreted primarily as descriptive characterization of the resulting phenotypes rather than as independent confirmatory hypothesis tests. 
+
+All analyses were conducted in R. 
+
+
+\section{Results}
+
+\subsection{Study Population}
+
+The initial breast cancer dataset included 12,542 participants. Restriction to female participants resulted in an analytic cohort of 11,972 patients.
+The final clustering dataset excluded race because of missingness. The feature set included 15 features that incorporated mental health, metabolic, treatment, and sociodemographic characteristics.
+
+\subsection{Baseline Characteristics}
+
+The overall distribution of the clinical characteristics in the female breast cancer cohort is presented in Table~\ref{tab:baseline_characteristics}. Depression and anxiety were present in 42.0\% and 44.0\% of the cohort, respectively. Bipolar disorder was observed in 9.2\%, while psychosis was present in 1.7\%. Among metabolic conditions, hypertension and dyslipidemia were the most prevalent, affecting approximately 61.0\% and 63.0\% of participants, respectively. Obesity and diabetes were present in approximately 35.0\% and 32.0\% of the cohort. Treatment exposure also varied substantially. Chemotherapy, radiation, and surgery were recorded in 16.0\%, 25.0\%, and 34.0\% of participants, respectively. As shown in Table~\ref{tab:baseline_characteristics}, depression and anxiety were present in 42\% and 44\% of the cohort, respectively.
+
+\begin{table}[H]
+\centering
+\caption{Baseline Characteristics of the Female Breast Cancer Cohort}
+\label{tab:baseline_characteristics}
+\small
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lc}
+\toprule
+\textbf{Characteristic} & \textbf{N = 11,972$^{1}$} \\
+\midrule
+
+Depression\_bin & 4,984 (42\%) \\
+Anxiety\_bin & 5,231 (44\%) \\
+Bipolar\_bin & 1,096 (9.2\%) \\
+Psychosis\_bin & 201 (1.7\%) \\
+
+Obesity\_bin & 4,232 (35\%) \\
+Diabetes\_bin & 3,890 (32\%) \\
+Hypertension\_bin & 7,349 (61\%) \\
+Dyslipidemia\_bin & 7,582 (63\%) \\
+
+Chemo\_bin & 1,872 (16\%) \\
+Radiation\_bin & 2,987 (25\%) \\
+Surgery\_bin & 4,109 (34\%) \\
+
+\textbf{Treatment Score} & \\
+\quad 0 & 6,425 (54\%) \\
+\quad 1 & 2,803 (23\%) \\
+\quad 2 & 2,067 (17\%) \\
+\quad 3 & 677 (5.7\%) \\
+
+race\_bin & 8,159 (78\%) \\
+\quad Unknown & 1,555 \\
+
+education\_bin & 9,610 (80\%) \\
+marital\_bin & 6,378 (53\%) \\
+age\_bin & 5,393 (45\%) \\
+
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\vspace{2mm}
+
+\begin{flushleft}
+\footnotesize
+\textit{Note:} Values are presented as $n$ (\%). 
+$^{1}$ Total number of female breast cancer patients in the analytic cohort.
+\end{flushleft}
+
+\end{table}
+
+\subsection{Phenotypic Clusters Identification and Characterization}
+Unsupervised k-means clustering identified four distinct phenotypic subgroups characterized by differential distributions of mental health disorders, metabolic comorbidities, treatment exposure, and sociodemographic factors (Table~\ref{tab:clusters}). 
+
+Cluster sizes ranged from 201 participants (1.7\%) in Cluster 2 to 4,830 (40.4\%) in Cluster 4. Significant differences were observed across clusters for all evaluated mental health, metabolic, treatment, and sociodemographic characteristics ($p < 0.001$; Table~\ref{tab:clusters}).
+
+Cluster 1 ($n = 2,714$; 22.7\%) was characterized primarily by high treatment exposure, with 54\% receiving chemotherapy, 87\% radiation, and 83\% surgery; 99\% had a Treatment Score of 2 or 3. Cluster 2 ($n = 201$; 1.7\%) represented a high psychiatric-burden phenotype, with depression (88\%), anxiety (84\%), bipolar disorder (62\%), and psychosis (100\%) particularly prominent. Cluster 3 ($n = 4,227$; 35.3\%) demonstrated the highest metabolic burden, with obesity (60\%), diabetes (61\%), hypertension (92\%), and dyslipidemia (90\%), alongside substantial depression and anxiety but relatively low treatment exposure. Cluster 4 ($n = 4,830$; 40.4\%) showed comparatively lower mental health and metabolic burden and limited treatment exposure.
+
+Sociodemographic characteristics also differed significantly across clusters, particularly education, marital status, and age group (all $p < 0.001$). Overall, the four clusters demonstrated distinct combinations of mental health burden, metabolic comorbidity, and treatment exposure, supporting their interpretation as clinically differentiated phenotypic profiles.
+
+\begin{table}[H]
+\centering
+\caption{Clinical, Mental Health, Treatment, and Sociodemographic Characteristics Across K-Means Phenotypic Clusters}
+\label{tab:clusters}
+
+\small
+
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Characteristic} &
+\textbf{Cluster 1} &
+\textbf{Cluster 2} &
+\textbf{Cluster 3} &
+\textbf{Cluster 4} &
+\textbf{$p$-value} \\
+\midrule
+
+\textbf{Sample size, N} &
+2,714 &
+201 &
+4,227 &
+4,830 &
+\\
+
+\midrule
+
+\multicolumn{6}{l}{\textbf{Mental Health Characteristics}} \\
+
+Depression &
+1,255 (46\%) &
+177 (88\%) &
+2,553 (60\%) &
+999 (21\%) &
+$<0.001$ \\
+
+Anxiety &
+1,367 (50\%) &
+168 (84\%) &
+2,466 (58\%) &
+1,230 (25\%) &
+$<0.001$ \\
+
+Bipolar disorder &
+252 (9.3\%) &
+125 (62\%) &
+597 (14\%) &
+122 (2.5\%) &
+$<0.001$ \\
+
+Psychosis &
+0 (0\%) &
+201 (100\%) &
+0 (0\%) &
+0 (0\%) &
+$<0.001$ \\
+
+\addlinespace
+
+\multicolumn{6}{l}{\textbf{Metabolic Characteristics}} \\
+
+Obesity &
+1,096 (40\%) &
+119 (59\%) &
+2,519 (60\%) &
+498 (10\%) &
+$<0.001$ \\
+
+Diabetes &
+873 (32\%) &
+107 (53\%) &
+2,582 (61\%) &
+328 (6.8\%) &
+$<0.001$ \\
+
+Hypertension &
+1,709 (63\%) &
+164 (82\%) &
+3,871 (92\%) &
+1,605 (33\%) &
+$<0.001$ \\
+
+Dyslipidemia &
+1,685 (62\%) &
+153 (76\%) &
+3,794 (90\%) &
+1,950 (40\%) &
+$<0.001$ \\
+
+\addlinespace
+
+\multicolumn{6}{l}{\textbf{Treatment Characteristics}} \\
+
+Chemotherapy &
+1,454 (54\%) &
+30 (15\%) &
+207 (4.9\%) &
+181 (3.7\%) &
+$<0.001$ \\
+
+Radiation &
+2,363 (87\%) &
+52 (26\%) &
+262 (6.2\%) &
+310 (6.4\%) &
+$<0.001$ \\
+
+Surgery &
+2,257 (83\%) &
+78 (39\%) &
+809 (19\%) &
+965 (20\%) &
+$<0.001$ \\
+
+\textbf{Treatment Score} &
+&
+&
+&
+&
+$<0.001$ \\
+
+\quad 0 &
+0 (0\%) &
+101 (50\%) &
+2,950 (70\%) &
+3,374 (70\%) &
+\\
+
+\quad 1 &
+25 (0.9\%) &
+46 (23\%) &
+1,276 (30\%) &
+1,456 (30\%) &
+\\
+
+\quad 2 &
+2,018 (74\%) &
+48 (24\%) &
+1 (<0.1\%) &
+0 (0\%) &
+\\
+
+\quad 3 &
+671 (25\%) &
+6 (3.0\%) &
+0 (0\%) &
+0 (0\%) &
+\\
+
+\addlinespace
+
+\multicolumn{6}{l}{\textbf{Sociodemographic Characteristics}} \\
+
+Education &
+2,159 (80\%) &
+125 (62\%) &
+3,019 (71\%) &
+4,307 (89\%) &
+$<0.001$ \\
+
+Marital status &
+1,481 (55\%) &
+56 (28\%) &
+1,761 (42\%) &
+3,080 (64\%) &
+$<0.001$ \\
+
+Age group &
+1,356 (50\%) &
+108 (54\%) &
+1,402 (33\%) &
+2,527 (52\%) &
+$<0.001$ \\
+
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+
+\vspace{2mm}
+
+\begin{flushleft}
+\footnotesize
+\textit{Note:} Values are presented as $n$ (\%). $p$-values were calculated using Pearson's chi-squared test or Fisher's exact test, as appropriate. Race was excluded from the clustering feature matrix because of missingness.
+\end{flushleft}
+
+\end{table}
+
+The four clusters represented distinct multidomain phenotypic profiles rather than a simple gradient of disease severity. Cluster 1 was primarily distinguished by intensive multimodal cancer treatment, Cluster 2 by pronounced psychiatric morbidity, Cluster 3 by substantial metabolic comorbidity accompanied by mental health burden, and Cluster 4 by comparatively lower mental health and metabolic burden and limited treatment exposure. These findings suggest heterogeneity in the intersection of psychiatric, metabolic, and treatment-related characteristics among female breast cancer patients
+
+\begin{table}[H]
+\centering
+\caption{Interpretation of the Four K-Means Phenotypic Clusters}
+\label{tab:cluster_interpretation}
+\begin{adjustbox}{max width=\textwidth}
+\begin{tabular}{l r p{4.2cm} p{6.0cm}}
+\toprule
+\textbf{Cluster} & \textbf{N (\%)} & \textbf{Dominant phenotype} & \textbf{Interpretation} \\
+\midrule
+Cluster 1 & 2,714 (22.7\%) &
+\textbf{High treatment exposure} &
+Multimodal cancer-treatment phenotype \\
+
+Cluster 2 & 201 (1.7\%) &
+\textbf{Severe psychiatric burden} &
+Psychiatric comorbidity phenotype \\
+
+Cluster 3 & 4,227 (35.3\%) &
+\textbf{High metabolic burden} &
+Metabolic--mental health comorbidity phenotype \\
+
+Cluster 4 & 4,830 (40.4\%) &
+\textbf{Lower overall burden} &
+Lower-comorbidity/limited-treatment phenotype \\
+\bottomrule
+\end{tabular}
+\end{adjustbox}
+\end{table}
+
+Since the clustering variables were predominantly binary, these are presented as data-derived phenotypic profiles, not as definitive biological subtypes.
+
+\begin{table}[H]
+\centering
+\caption{Distribution of Treatment Score Across K-Means Phenotypic Clusters}
+\label{tab:treatment_score_clusters}
+\begin{tabular}{lrrrr}
+\hline
+\textbf{Treatment Score} & \textbf{Cluster 1} & \textbf{Cluster 2} & \textbf{Cluster 3} & \textbf{Cluster 4} \\
+\hline
+0 & 0\% & 50\% & 70\% & 70\% \\
+1 & 0.9\% & 23\% & 30\% & 30\% \\
+2 & 74\% & 24\% & $<0.1\%$ & 0\% \\
+3 & 25\% & 3\% & 0\% & 0\% \\
+\hline
+\end{tabular}
+\end{table}
+%=========================================================
+% Discussion
+% =========================================================
+\section{Discussion}
+This study identified four distinct phenotypic subgroups among female breast cancer patients based on patterns of mental health disorders, metabolic comorbidities, treatment exposure, and selected sociodemographic characteristics. The clusters demonstrated substantial heterogeneity across these domains. Cluster 1 was characterized primarily by intensive cancer treatment exposure, Cluster 2 represented a small but clinically distinctive subgroup with a high psychiatric burden, Cluster 3 demonstrated a pronounced concentration of metabolic comorbidities, and Cluster 4 generally exhibited lower prevalence of mental health and metabolic conditions and lower treatment exposure.
+
+The use of unsupervised clustering in the present study is consistent with the growing application of machine learning for clinical phenotyping and data-driven patient segmentation. Previous research has demonstrated that unsupervised approaches can identify clinically meaningful subphenotypes from electronic health records and other real-world healthcare data \cite{Yang2023}. A recent scoping review further identified k-means as the most frequently used unsupervised machine-learning approach for data-driven population segmentation across healthcare settings \cite{phenotypeclusteringhealthcare}. Similarly, longitudinal clustering approaches have been applied to identify clinically meaningful trajectories in opioid-related outcomes, including longitudinal k-means with imputation to handle missing data, longitudinal k-means with B-splines to accommodate irregular sequences and missing data, and k-means applied to Variational Recurrent Autoencoders (VRAE) to identify more nuanced trajectory-based subtypes. The B-spline and VRAE approaches identified clinically relevant subtypes that could subsequently be used as features in machine-learning models to predict opioid overdose and abuse events \cite{Mullin2021}. The present study extends this application to a breast cancer population by integrating mental health, metabolic, treatment, and sociodemographic characteristics within a single phenotyping framework.
+
+Unlike approaches that define patient groups according to a single diagnosis or treatment characteristic, the present analysis identified subgroups characterized by combinations of psychiatric burden, metabolic comorbidity, and cancer treatment exposure. Cluster 1 was predominantly characterized by high treatment exposure, Cluster 2 by pronounced psychiatric morbidity, Cluster 3 by substantial metabolic burden accompanied by mental health burden, and Cluster 4 by comparatively lower clinical burden and treatment exposure. These findings illustrate the potential utility of unsupervised phenotyping for revealing multidimensional patterns of disease and treatment that may be obscured when conditions are examined independently.
+
+The high psychiatric burden observed in Cluster 2 is particularly notable. Although this cluster represented only 201 participants, the prevalence of depression, anxiety, bipolar disorder, and psychosis was substantially higher than in the other clusters. This pattern may identify a subgroup that warrants greater attention to integrated psychosocial and psychiatric support during survivorship. Cluster 3 demonstrated a strong concentration of metabolic comorbidities, with particularly high prevalence of hypertension and dyslipidemia. This finding suggests that metabolic health may represent an important dimension of heterogeneity among female breast cancer patients and may have implications for long-term survivorship care. The treatment-intensive profile of Cluster 1 also highlights the importance of considering treatment burden when characterizing breast cancer populations. Patients exposed to multiple treatment modalities may have different clinical and supportive care needs from those with limited treatment exposure.
+
+\subsection{Methodological Considerations of Clustering Binary Clinical Data}
+
+The present study used k-means clustering to identify phenotypically distinct subgroups from a predominantly binary clinical feature set. The use of k-means in this context is supported by methodological research demonstrating that k-means can recover meaningful cluster structures in dichotomous data, although its performance may vary according to the characteristics of the underlying data and cluster structure \cite{Brusco2004,Brusco2017}. In a comparative simulation study, Brusco et al. found that k-means, k-median, and latent class methods were all capable of recovering cluster structure in dichotomous data, although k-median generally demonstrated somewhat better recovery than k-means \cite{Brusco2017}. Thus, the four clusters identified in the present study should be interpreted as data-driven phenotypic groupings rather than as definitive latent clinical classes.
+
+The predominance of binary indicators in the present analysis also represents an important methodological consideration. K-means minimizes within-cluster Euclidean distances around cluster centroids, whereas methods such as k-modes were specifically developed for categorical data by replacing Euclidean distance with Hamming distance and cluster means with categorical modes \cite{Dorman2022}. Similarly, specialized mixture-model approaches have been proposed for sparse high-dimensional binary data because conventional clustering methods may not fully account for the characteristics of sparse binary representations \cite{Smieja2019}. These approaches provide important alternatives for future analyses and sensitivity assessments.
+
+Another consideration is the potential influence of variables that contribute relatively little to cluster separation. Brusco demonstrated that masking variables can interfere with the recovery of meaningful cluster structure in binary datasets \cite{Brusco2004}. In the present study, variables were selected based on their clinical relevance to mental health, metabolic health, treatment exposure, and patient characteristics, while race was excluded from the clustering feature matrix because of missingness and its conceptual role as a contextual rather than phenotype-defining characteristic. Nevertheless, the possibility that individual variables may differentially influence cluster formation should be recognized. Consequently, appropriate cluster selection, feature preprocessing, assessment of cluster stability, and clinical interpretation are important components of unsupervised phenotyping \cite{phenotypeclusteringhealthcare}. In the present study, the number of clusters was evaluated using complementary internal criteria, including silhouette width, the gap statistic, and the elbow method, before characterizing the resulting phenotypic profiles. The identified clusters should therefore be interpreted as data-driven phenotypic profiles rather than definitive biological or clinical classes.
+
+Despite these methodological considerations, the identified clusters demonstrated clinically interpretable and substantially different patterns of psychiatric burden, metabolic comorbidity, and treatment exposure. The consistency of these profiles supports the utility of unsupervised clustering as an exploratory phenotyping strategy for large-scale real-world breast cancer data. Importantly, the purpose of clustering was to identify patterns of co-occurring characteristics within the cohort rather than to establish causal relationships or diagnostic categories.
+
+Future studies should evaluate the reproducibility and stability of these phenotypes using alternative approaches specifically designed for binary or mixed-type data, including k-median, k-modes, latent class analysis, or distance-based methods \cite{Brusco2017,Smieja2019,Dorman2022}. Alternative clustering specifications could also evaluate the influence of the Treatment Score, which was derived from the individual treatment indicators. Replication using independent breast cancer cohorts would further determine whether the four phenotypic profiles identified in this study are generalizable across populations and healthcare settings. Longitudinal analyses could additionally assess whether these phenotypes are associated with differences in survivorship outcomes, healthcare utilization, treatment outcomes, recurrence, or mortality.
+
+\section{Strengths and Limitations}
+
+A major strength of this study is the use of a large real-world cohort of 11,972 female breast cancer patients with multidimensional clinical and behavioral information. The standardized binary representation of clinical characteristics facilitated interpretable phenotyping across multiple domains.
+
+The study also incorporated treatment burden as a composite score, allowing characterization of patients according to the number of treatment modalities received in addition to individual treatment exposures.
+
+Several limitations should be considered. First, the cross-sectional nature of the analysis prevents determination of temporal or causal relationships among mental health disorders, metabolic conditions, and treatment exposures.
+
+Second, binary encoding simplifies potentially complex clinical conditions and may result in loss of information regarding disease severity, duration, treatment response, or timing. Similarly, dichotomization of age based on the cohort mean reduces the granularity available from the continuous age variable.
+
+Third, race was excluded from the clustering feature matrix because of missing information in 1,555 participants. Consequently, racial characteristics were not incorporated into the derivation of the phenotypic clusters.
+
+Fourth, the dataset contains a relatively sparse binary structure, which is common in electronic health record data. K-means clustering is traditionally designed for continuous variables and uses Euclidean distance. Therefore, the resulting clusters should be interpreted cautiously, and future work could evaluate alternative approaches such as hierarchical clustering or Gower-distance-based methods that may be better suited to mixed or binary data.
+
+Finally, Treatment Score was derived from the three treatment indicators. If all four treatment variables are simultaneously used as clustering features, the treatment domain may receive greater influence in defining the clusters. Future analyses should evaluate alternative specifications, including clustering based on individual treatment indicators without the composite score or using the composite score alone.
+
+% =========================================================
+% Conclusion
+% =========================================================
+\section{Conclusion}
+
+This study identified four distinct mental health--metabolic and treatment-related phenotypes among female breast cancer patients using All of Us real-world data.
+
+The identified clusters demonstrated markedly different patterns of psychiatric burden, metabolic multimorbidity, treatment exposure, and sociodemographic characteristics. These findings support the potential utility of data-driven phenotyping for recognizing heterogeneity within the breast cancer population.
+
+Future longitudinal analyses should examine whether these phenotypes are associated with differences in survivorship outcomes, healthcare utilization, treatment outcomes, recurrence, or mortality.
+
+\section*{List of Abbreviations}
+
+\begin{description}
+\setlength{\itemsep}{0pt}
+\setlength{\parskip}{0pt}
+\setlength{\parsep}{0pt}
+    \item[All of Us] All of Us Research Program
+    \item[EHR] Electronic Health Record
+    \item[K-means] K-means clustering
+    \item[WSS] Within-Cluster Sum of Squares
+    \item[PPI] Participant-Provided Information
+    \item[OMOP] Observational Medical Outcomes Partnership
+    \item[CTv8] Curated Data Repository version 8
+    \item[NLP] Natural Language Processing
+    \item[VRAE] Variational Recurrent Autoencoder
+    \item[TS] Treatment Score
+    \item[SD] Standard Deviation
+\end{description}
+% =========================================================
+% Author Contributions
+% =========================================================
+\section*{Author Contributions}
+
+\textbf{Namita Mishra:} Data collection and management, statistical analysis, and manuscript drafting.
+
+\textbf{Karishma Chhabria:} Research planning, interpretation, and manuscript drafting.
+
+\textbf{Achraf Cohen:} Statistical supervision, interpretation, and manuscript drafting.
+
+% =========================================================
+% Ethics Statement
+% =========================================================
+\section*{Ethics Statement}
+
+This study used de-identified data from the All of Us Research Program.
+All analyses were conducted using the All of Us Research Program data
+environment in accordance with the program's data-use requirements.
+Institutional review and participant protections were established by the
+All of Us Research Program. This secondary analysis used de-identified
+research data and did not involve direct participant contact.
+
+
+% =========================================================
+% Data Availability
+% =========================================================
+\section*{Data Availability Statement}
+
+The data used in this study were obtained from the All of Us Research Program.
+Because All of Us data are subject to controlled-access and data-use
+requirements, the underlying participant-level data cannot be publicly
+redistributed by the authors. Researchers may apply for access through the
+All of Us Research Program subject to the program's eligibility,
+registration, and data-use requirements. The analyses reported in this study
+were conducted using All of Us Research Program Curated Data Repository
+version 8 (CTv8).
+% =========================================================
+% Funding
+% =========================================================
+\section*{Funding}
+The Principal Investigator received grant funding (Grant No. [XXXX]) to support the conduct of this research.
+
+% =========================================================
+% Conflict of Interest
+% =========================================================
+\section*{Conflict of Interest}
+
+The authors declare that they have no conflicts of interest related to this
+study.
+
+\listoffigures
+\listoftables
+\bibliographystyle{plainnat}
+\bibliography{reference}
+\end{document}
+
