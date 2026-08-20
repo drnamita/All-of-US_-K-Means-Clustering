@@ -1,4 +1,4 @@
-# All-of-US_-K-Means-Clustering
+# All-of-US-K-Means-Clustering
 # Identification of Distinct Mental Health–Metabolic Clusters in Female Breast Cancer Patients Using All of Us Real-World Data
 
 ## Overview
